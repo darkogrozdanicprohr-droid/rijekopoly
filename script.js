@@ -24,7 +24,7 @@ const H = canvas.height;
 const START_MONEY = 1500;
 const MAX_LAPS = 3;
 
-// definiraj imena polja (iz tvoje liste) — 40 polja
+// definiraj imena polja (iz tvoje liste)
 const fieldNames = [
 "START - Dobrodošli u Rijeku",
 "Dom mladih Rijeka",
@@ -68,8 +68,18 @@ const fieldNames = [
 ];
 
 // generiraj cijene i najam (jednostavno)
+// želimo povećati pločice za ~30% i smanjiti broj pozicija po strani tako da pločice stanu na isti canvas
+const TILE_SEGMENTS_BASE = 9; // originalno je korišteno 9 segmenata (10 polja po strani)
+const SCALE = 1.40; // cilj: 40% veće pločice (povećano još za ~10%)
+// smanjenje fonta za 10% prema zahtjevu
+const FONT_SCALE = 0.90;
+const segments = Math.max(6, Math.round(TILE_SEGMENTS_BASE / SCALE));
+const POSITIONS_PER_SIDE = segments + 1; // broj polja po strani
+const POS_COUNT = POSITIONS_PER_SIDE * 4; // ukupno polja na ploči
+
+// generiraj cijene i najam (jednostavno)
 const prices = [];
-for (let i=0;i<40;i++){
+for (let i=0;i<POS_COUNT;i++){
   // start/posebna polja imaju 0
   if (i===0) prices.push(0);
   else {
@@ -80,7 +90,7 @@ for (let i=0;i<40;i++){
       prices.push(0);
     } else {
       // cijena ovisi o poziciji
-      const base = 100 + Math.round((i%10) * 20 + Math.floor(i/10)*30);
+      const base = 100 + Math.round((i%POSITIONS_PER_SIDE) * 20 + Math.floor(i/POSITIONS_PER_SIDE)*30);
       prices.push(base);
     }
   }
@@ -89,37 +99,36 @@ function rentFor(i){ return Math.max(10, Math.round(prices[i]*0.25)); }
 
 // polja: pozicije oko kvadrata
 const fields = [];
-// želimo povećati svako polje za 20% i ukloniti razmake između polja
-const SCALE = 1.20; // 20% veća
-// počnimo od reference margin-e, izračunamo nove cellW/cellH pa prilagodimo margin-e tako da pločice dodiruju jedna drugu (bez razmaka)
+// računamo širinu/visinu ćelije tako da pločice budu veće (~SCALE) ali stanu u canvas
 const refMargin = 100;
-const baseCellW = (W - 2*refMargin) / 9;
-const baseCellH = (H - 2*refMargin) / 9;
-let cellW = baseCellW * SCALE;
-let cellH = baseCellH * SCALE;
-// prilagodi margin-e tako da 9 segmenata širine zauzme raspoloživi prostor
-const marginX = Math.max(8, (W - 9 * cellW) / 2);
-const marginY = Math.max(8, (H - 9 * cellH) / 2);
+// broj segmenata koji koristimo po strani = segments (računato gore)
+const cellW = (W - 2*refMargin) / segments;
+const cellH = (H - 2*refMargin) / segments;
+// margin-e prilagođavamo tako da pločice centriramo
+const marginX = refMargin;
+const marginY = refMargin;
 const coords = [];
 
-// generiraj 40 koordinata (clockwise) počevši od bottom-right (index 0), idemo lijevo duž bottom strane (0..9),
-// zatim gore lijeva strana (10..19), pa desno po vrhu (20..29), pa dolje po desnoj strani (30..39) do starta.
-for (let i=0;i<40;i++){
+// generiraj pozicije koordinata oko kvadrata (clockwise) počevši od bottom-right (index 0)
+// koristimo POS_COUNT pozicija koje proizlaze iz izračuna broja segmenata po strani.
+for (let i=0;i<POS_COUNT;i++){
   let x,y;
-  if (i<=9){ // bottom row, right->left
-    const t = i;
+  const side = Math.floor(i / POSITIONS_PER_SIDE);
+  const idxOnSide = i % POSITIONS_PER_SIDE;
+  if (side === 0){ // bottom row, right->left
+    const t = idxOnSide;
     x = W - marginX - t*cellW - cellW/2;
     y = H - marginY + cellH/2;
-  } else if (i<=19){ // left column, bottom->top
-    const t = i-10;
+  } else if (side === 1){ // left column, bottom->top
+    const t = idxOnSide-1;
     x = marginX - cellW/2;
     y = H - marginY - (t+1)*cellH + cellH/2;
-  } else if (i<=29){ // top row, left->right
-    const t = i-20;
+  } else if (side === 2){ // top row, left->right
+    const t = idxOnSide-1;
     x = marginX + (t+1)*cellW - cellW/2;
     y = marginY - cellH/2;
   } else { // right column, top->bottom
-    const t = i-30;
+    const t = idxOnSide-1;
     x = W - marginX + cellW/2;
     y = marginY + (t+1)*cellH - cellH/2;
   }
@@ -150,8 +159,28 @@ function drawBoard(){
   const centerH = Math.max(200, Math.round(cellH * 3));
   ctx.fillRect(W/2 - centerW/2, H/2 - centerH/2, centerW, centerH);
 
+  // helper: wrap text into multiple lines to fit inside tile
+  function wrapTextToLines(context, text, maxWidth){
+    if (!text) return [];
+    const words = text.split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line ? (line + ' ' + words[n]) : words[n];
+      const metrics = context.measureText(testLine);
+      if (metrics.width > maxWidth && line) {
+        lines.push(line);
+        line = words[n];
+      } else {
+        line = testLine;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
   // polja (male pravokutnike)
-  for (let i=0;i<40;i++){
+  for (let i=0;i<POS_COUNT;i++){
     const c = coords[i];
   // compute orientation sizes (use computed cell sizes so tiles touch)
   const w = Math.round(cellW);
@@ -168,25 +197,36 @@ function drawBoard(){
     ctx.stroke();
 
     // owner color band at top
-    if (fields[i].owner !== null){
+    if (fields[i] && fields[i].owner !== null){
       ctx.fillStyle = players[fields[i].owner].color;
       const bandH = Math.max(6, Math.round(h * 0.12));
       ctx.fillRect(-w/2, -h/2, w, bandH);
     }
 
-    // small text
+    // small text (wrapped). reduce font by FONT_SCALE
     ctx.fillStyle = "#222";
-  ctx.font = Math.max(10, Math.round(h * 0.18)) + "px Arial";
+    const baseFontPx = Math.max(8, Math.round(h * 0.18 * FONT_SCALE));
+    ctx.font = baseFontPx + "px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    let label = fields[i].name;
-    // skraćivanje ako je predug
-    if (label.length>20) label = label.slice(0,20)+"…";
-    ctx.fillText(label, 0, 0);
+    const label = (fields[i] && fields[i].name) || '';
+    // measure available width inside tile (leave small padding)
+    const paddingX = Math.max(6, Math.round(w * 0.08));
+    const availableWidth = w - paddingX * 2;
+    const lines = wrapTextToLines(ctx, label, availableWidth);
+    // compute vertical start so lines are vertically centered
+    const lineHeight = Math.round(baseFontPx * 1.15);
+    const totalHeight = lines.length * lineHeight;
+    let startY = - (totalHeight / 2) + (lineHeight/2);
+    // draw lines
+    for (let li = 0; li < lines.length; li++){
+      ctx.fillText(lines[li], 0, startY + li * lineHeight);
+    }
 
-    // price
-    if (fields[i].price>0){
-      ctx.font = Math.max(10, Math.round(h * 0.16)) + "px Arial";
+    // price (smaller font, also scaled)
+    if (fields[i] && fields[i].price>0){
+      const priceFontPx = Math.max(8, Math.round(h * 0.16 * FONT_SCALE));
+      ctx.font = priceFontPx + "px Arial";
       ctx.fillText(fields[i].price+"$", 0, h/4);
     }
     ctx.restore();
@@ -216,7 +256,7 @@ function drawBoard(){
   ctx.strokeStyle = "#b48a3a";
   ctx.stroke();
   ctx.fillStyle = "#000";
-  ctx.font = Math.max(12, Math.round(startH * 0.18)) + "px Arial";
+  ctx.font = Math.max(10, Math.round(startH * 0.18 * FONT_SCALE)) + "px Arial";
   ctx.fillText("START / KRAJ", s.x, s.y);
 }
 
@@ -304,7 +344,7 @@ function animateMove(steps){
     const stepTime = 300;
     const interval = setInterval(()=>{
       const prevPos = player.pos;
-      player.pos = (player.pos + 1) % 40;
+  player.pos = (player.pos + 1) % POS_COUNT;
       // ako smo prošli preko START (pos postao 0 nakon povećanja), povećaj laps
       if (player.pos === 0) {
         player.laps += 1;
