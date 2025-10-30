@@ -223,12 +223,7 @@ function drawBoard(){
       ctx.fillText(lines[li], 0, startY + li * lineHeight);
     }
 
-    // price (smaller font, also scaled)
-    if (fields[i] && fields[i].price>0){
-      const priceFontPx = Math.max(8, Math.round(h * 0.16 * FONT_SCALE));
-      ctx.font = priceFontPx + "px Arial";
-      ctx.fillText(fields[i].price+"$", 0, h/4);
-    }
+    // prices are intentionally not drawn on the tile faces (shown in HUD instead)
     ctx.restore();
   }
 
