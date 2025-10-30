@@ -89,9 +89,17 @@ function rentFor(i){ return Math.max(10, Math.round(prices[i]*0.25)); }
 
 // polja: pozicije oko kvadrata
 const fields = [];
-const margin = 100;
-const cellW = (W - 2*margin) / 9; // 10 polja po stranci uključujući kuteve -> koristimo 10, ali računamo 9 segmenata
-const cellH = (H - 2*margin) / 9;
+// želimo povećati svako polje za 20% i ukloniti razmake između polja
+const SCALE = 1.20; // 20% veća
+// počnimo od reference margin-e, izračunamo nove cellW/cellH pa prilagodimo margin-e tako da pločice dodiruju jedna drugu (bez razmaka)
+const refMargin = 100;
+const baseCellW = (W - 2*refMargin) / 9;
+const baseCellH = (H - 2*refMargin) / 9;
+let cellW = baseCellW * SCALE;
+let cellH = baseCellH * SCALE;
+// prilagodi margin-e tako da 9 segmenata širine zauzme raspoloživi prostor
+const marginX = Math.max(8, (W - 9 * cellW) / 2);
+const marginY = Math.max(8, (H - 9 * cellH) / 2);
 const coords = [];
 
 // generiraj 40 koordinata (clockwise) počevši od bottom-right (index 0), idemo lijevo duž bottom strane (0..9),
@@ -100,20 +108,20 @@ for (let i=0;i<40;i++){
   let x,y;
   if (i<=9){ // bottom row, right->left
     const t = i;
-    x = W - margin - t*cellW - cellW/2;
-    y = H - margin + cellH/2;
+    x = W - marginX - t*cellW - cellW/2;
+    y = H - marginY + cellH/2;
   } else if (i<=19){ // left column, bottom->top
     const t = i-10;
-    x = margin - cellW/2;
-    y = H - margin - (t+1)*cellH + cellH/2;
+    x = marginX - cellW/2;
+    y = H - marginY - (t+1)*cellH + cellH/2;
   } else if (i<=29){ // top row, left->right
     const t = i-20;
-    x = margin + (t+1)*cellW - cellW/2;
-    y = margin - cellH/2;
+    x = marginX + (t+1)*cellW - cellW/2;
+    y = marginY - cellH/2;
   } else { // right column, top->bottom
     const t = i-30;
-    x = W - margin + cellW/2;
-    y = margin + (t+1)*cellH - cellH/2;
+    x = W - marginX + cellW/2;
+    y = marginY + (t+1)*cellH - cellH/2;
   }
   coords.push({x,y});
   fields.push({
@@ -138,14 +146,16 @@ function drawBoard(){
   ctx.clearRect(0,0,W,H);
   // centralni kvadrat
   ctx.fillStyle = "#f7e7d6";
-  const center = { x:W/2 - 180/2, y:H/2 - 180/2 };
-  ctx.fillRect(W/2-180,H/2-180,360,360);
+  const centerW = Math.max(200, Math.round(cellW * 3));
+  const centerH = Math.max(200, Math.round(cellH * 3));
+  ctx.fillRect(W/2 - centerW/2, H/2 - centerH/2, centerW, centerH);
 
   // polja (male pravokutnike)
   for (let i=0;i<40;i++){
     const c = coords[i];
-    // compute orientation sizes
-    const w = 80, h = 60;
+  // compute orientation sizes (use computed cell sizes so tiles touch)
+  const w = Math.round(cellW);
+  const h = Math.round(cellH);
     // outline
     ctx.save();
     ctx.translate(c.x, c.y);
@@ -160,12 +170,13 @@ function drawBoard(){
     // owner color band at top
     if (fields[i].owner !== null){
       ctx.fillStyle = players[fields[i].owner].color;
-      ctx.fillRect(-w/2, -h/2, w, 8);
+      const bandH = Math.max(6, Math.round(h * 0.12));
+      ctx.fillRect(-w/2, -h/2, w, bandH);
     }
 
     // small text
     ctx.fillStyle = "#222";
-    ctx.font = "10px Arial";
+  ctx.font = Math.max(10, Math.round(h * 0.18)) + "px Arial";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     let label = fields[i].name;
@@ -175,12 +186,8 @@ function drawBoard(){
 
     // price
     if (fields[i].price>0){
-      ctx.font = "10px Arial";
+      ctx.font = Math.max(10, Math.round(h * 0.16)) + "px Arial";
       ctx.fillText(fields[i].price+"$", 0, h/4);
-    } else {
-      // oznake za PRILIKA/IZAZOV/ZATVOR/START
-      ctx.font = "10px Arial";
-      ctx.fillText("",0,0);
     }
     ctx.restore();
   }
@@ -202,12 +209,14 @@ function drawBoard(){
   ctx.fillStyle = "#f0c987";
   const s = coords[0];
   ctx.beginPath();
-  ctx.rect(s.x-40, s.y-30, 80, 60);
+  const startW = Math.round(cellW);
+  const startH = Math.round(cellH);
+  ctx.rect(s.x - startW/2, s.y - startH/2, startW, startH);
   ctx.fill();
-  ctx.strokeStyle="#b48a3a";
+  ctx.strokeStyle = "#b48a3a";
   ctx.stroke();
-  ctx.fillStyle="#000";
-  ctx.font="12px Arial";
+  ctx.fillStyle = "#000";
+  ctx.font = Math.max(12, Math.round(startH * 0.18)) + "px Arial";
   ctx.fillText("START / KRAJ", s.x, s.y);
 }
 
@@ -230,7 +239,7 @@ canvas.addEventListener('click', (e)=>{
   for (let i=0;i<coords.length;i++){
     const c = coords[i];
     const dx = x-c.x, dy = y-c.y;
-    if (Math.abs(dx) <= 45 && Math.abs(dy) <= 35){
+    if (Math.abs(dx) <= cellW/2 && Math.abs(dy) <= cellH/2){
       clicked = i;
       break;
     }
