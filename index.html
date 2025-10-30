@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="hr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Rijekopoly — mini web igra" />
+  <title>Rijekopoly — mini web igra</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="container">
+    <h1>Rijekopoly — mini igra</h1>
+
+    <main id="game-area" aria-label="Igralište">
+      <canvas id="board" width="800" height="800" tabindex="0" aria-label="Igraća ploča">
+        Vaš preglednik ne podržava element <code>canvas</code>.
+      </canvas>
+
+      <aside id="hud" aria-label="Kontrole i status igrača">
+        <div class="players">
+          <div class="player" id="player0" aria-label="Igrač Crveni">
+            <div class="dot red" aria-hidden="true"></div>
+            <div class="info">
+              <div class="name">Crveni</div>
+              <div>Novac: <span id="money0">1500</span>$</div>
+              <div>Krugovi: <span id="laps0">0</span></div>
+            </div>
+          </div>
+          <div class="player" id="player1" aria-label="Igrač Plavi">
+            <div class="dot blue" aria-hidden="true"></div>
+            <div class="info">
+              <div class="name">Plavi</div>
+              <div>Novac: <span id="money1">1500</span>$</div>
+              <div>Krugovi: <span id="laps1">0</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="controls">
+          <div>Na potezu: <strong id="turnLabel">Crveni</strong></div>
+          <button id="rollBtn" type="button">🎲 Baci kocku</button>
+          <div>Rezultat: <span id="diceResult">-</span></div>
+          <div id="msg" class="msg" role="status" aria-live="polite"></div>
+        </div>
+
+        <div id="fieldInfo">
+          <h3>Polje</h3>
+          <div id="fieldName">Klikni polje za info</div>
+          <div id="fieldPrice"></div>
+          <div id="fieldOwner"></div>
+          <button id="buyBtn" class="hidden" type="button">Kupi</button>
+        </div>
+      </aside>
+    </main>
+
+    <div id="footer">
+      <small>Igra završava kada netko bankrotira ili jedan igrač napraví 3 kruga.</small>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
