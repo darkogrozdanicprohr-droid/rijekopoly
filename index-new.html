@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rijekopoly - HTML verzija</title>
+    <link rel="stylesheet" href="styles-new.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="board-container">
+            <div id="board" class="board">
+                <div class="board-center"></div>
+                <!-- Tiles will be dynamically inserted here -->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="player-info">
+                <div class="player" id="player0">
+                    <span class="player-name">Crveni</span>
+                    <span class="player-money">Novac: <span id="money0">1500</span>$</span>
+                    <span class="player-laps">Krugovi: <span id="laps0">0</span></span>
+                </div>
+                <div class="player" id="player1">
+                    <span class="player-name">Plavi</span>
+                    <span class="player-money">Novac: <span id="money1">1500</span>$</span>
+                    <span class="player-laps">Krugovi: <span id="laps1">0</span></span>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <div class="turn-info">
+                    Na potezu: <span id="turnLabel">Crveni</span>
+                </div>
+                <button id="rollBtn">Baci kocku</button>
+                <div class="dice">
+                    Kocka: <span id="diceResult">-</span>
+                </div>
+            </div>
+
+            <div class="field-info">
+                <div id="fieldName"></div>
+                <div id="fieldPrice"></div>
+                <div id="fieldOwner"></div>
+                <button id="buyBtn" class="hidden">Kupi polje</button>
+            </div>
+
+            <div class="message" id="msg">
+                Klikni polje za info, ili Baci kocku za kretanje.
+            </div>
+        </div>
+    </div>
+    <script src="script-new.js"></script>
+</body>
+</html>
