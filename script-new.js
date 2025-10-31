@@ -94,8 +94,8 @@ const tiles = []; // DOM elements for each field
 
 // Players
 const players = [
-    { id: 0, name: "Crveni", color: "#e74c3c", pos: 0, money: START_MONEY, laps: 0, element: null },
-    { id: 1, name: "Plavi", color: "#2980b9", pos: 0, money: START_MONEY, laps: 0, element: null }
+    { id: 0, name: "Plavi", color: "#2980b9", pos: 0, money: START_MONEY, laps: 0, element: null },
+    { id: 1, name: "Crveni", color: "#e74c3c", pos: 0, money: START_MONEY, laps: 0, element: null }
 ];
 let turn = 0;
 let rolling = false;
