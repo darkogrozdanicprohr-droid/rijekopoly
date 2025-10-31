@@ -92,6 +92,9 @@ function rentFor(i) { return Math.max(10, Math.round(prices[i] * 0.25)); }
 const fields = [];
 const tiles = []; // DOM elements for each field
 
+// Dummy descriptions for each tile
+const tileDescriptions = Array.from({length: fieldNames.length}, (_, i) => `Opis za polje ${i}: Ovo je demo opis za "${fieldNames[i] || 'Polje'}".`);
+
 // Players
 const players = [
     { id: 0, name: "Plavi", color: "#2980b9", pos: 0, money: START_MONEY, laps: 0, element: null },
@@ -163,6 +166,10 @@ function createBoard() {
         // Add click handler
         tile.addEventListener('click', () => showFieldInfo(i));
 
+        // Add hover handlers
+        tile.addEventListener('mouseenter', () => showTileAside(i));
+        tile.addEventListener('mouseleave', hideTileAside);
+
         board.appendChild(tile);
     }
 
@@ -175,6 +182,21 @@ function createBoard() {
     });
 
     updatePlayerPositions();
+}
+
+// Show aside with tile description
+function showTileAside(i) {
+    const aside = document.getElementById('tileAside');
+    const nameEl = document.getElementById('tileAsideName');
+    const descEl = document.getElementById('tileAsideDesc');
+    nameEl.textContent = fieldNames[i] || `Polje ${i}`;
+    descEl.textContent = tileDescriptions[i] || '';
+    aside.classList.remove('hidden');
+}
+
+function hideTileAside() {
+    const aside = document.getElementById('tileAside');
+    aside.classList.add('hidden');
 }
 
 function updatePlayerPositions() {

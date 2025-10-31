@@ -153,6 +153,27 @@ body {
     display: none;
 }
 
+.tile-aside {
+    margin-top: 20px;
+    width: 100%;
+    background: #fff8f0;
+    border: 2px solid #c9b89f;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    padding: 18px 20px;
+    box-sizing: border-box;
+    transition: opacity 0.2s;
+}
+.tile-aside-name {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+.tile-aside-desc {
+    font-size: 13px;
+    color: #555;
+}
+
 #buyBtn {
     width: 100%;
     padding: 10px;
