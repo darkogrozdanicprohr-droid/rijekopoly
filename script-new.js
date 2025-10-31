@@ -298,10 +298,6 @@ function createBoard() {
         // Add click handler
         tile.addEventListener('click', () => showFieldInfo(i));
 
-        // Add hover handlers
-        tile.addEventListener('mouseenter', () => showTileAside(i));
-        tile.addEventListener('mouseleave', hideTileAside);
-
         board.appendChild(tile);
     }
 
@@ -323,12 +319,6 @@ function showTileAside(i) {
     const descEl = document.getElementById('tileAsideDesc');
     nameEl.textContent = fieldNames[i] || `Polje ${i}`;
     descEl.innerHTML = getTileDescriptionHTML(i);
-    aside.classList.remove('hidden');
-}
-
-function hideTileAside() {
-    const aside = document.getElementById('tileAside');
-    aside.classList.add('hidden');
 }
 
 function updatePlayerPositions() {
@@ -532,6 +522,7 @@ window.addEventListener('load', () => {
     createBoard();
     updateHUD();
     msg.textContent = "Klikni polje za info, ili Baci kocku za kretanje.";
+    showTileAside(0); // Show START field description initially
 });
 
 // Debug: Shift+double-click to reset (same as original)
