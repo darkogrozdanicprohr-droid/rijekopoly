@@ -92,8 +92,140 @@ function rentFor(i) { return Math.max(10, Math.round(prices[i] * 0.25)); }
 const fields = [];
 const tiles = []; // DOM elements for each field
 
-// Dummy descriptions for each tile
-const tileDescriptions = Array.from({length: fieldNames.length}, (_, i) => `Opis za polje ${i}: Ovo je demo opis za "${fieldNames[i] || 'Polje'}".`);
+// Tile descriptions with detailed information
+const tileDescriptions = {
+    "Lista stanova za mlade": {
+        description: "Program stambenog zbrinjavanja mladih",
+        details: [
+            "Informacije o slobodnim stanovima",
+            "Pregled raspona cijena (min-max)",
+        ],
+        link: "https://www.rijeka.hr/gradska-uprava/gradsko-vijece/savjet-mladih-grada-rijeke/"
+    },
+    "Dom mladih Rijeka": {
+        description: "Programi i radionice za mlade",
+        details: [
+            "Nadolazeće radionice i edukacije",
+            "Mogućnosti za prijave na programe"
+        ],
+        link: "https://dom-mladih.hr/aktivnosti/"
+    },
+    "Odjel za mlade – Knjižnica": {
+        description: "Gradska knjižnica Rijeka (Rasadnik)",
+        details: [
+            "Informacije o prostorima za mlade",
+            "Promotivni programi i aktivnosti"
+        ],
+        link: "https://gkr.hr/o-nama/projekti--p-27"
+    },
+    "Portal za mlade / komunikacija": {
+        description: "Moja Rijeka - portal za mlade",
+        details: [
+            "Digitalna platforma za sudjelovanje",
+            "Informacije i novosti za mlade"
+        ],
+        link: "https://www.mojarijeka.hr/"
+    },
+    "Najbliži za kulturne programe": {
+        description: "Natječaji i javni pozivi za kulturne programe mladih",
+        details: [
+            "Pregled natječaja za projekte",
+            "Informacije o poticajima"
+        ],
+        link: "https://www.rijeka.hr/teme-za-gradane/obitelj-i-drustvena-skrb/mladi/program-za-mlade-grada-rijeke/"
+    },
+    "Bezplatni gradski prijevoz": {
+        description: "Besplatni gradski prijevoz za srednjoškolce",
+        details: [
+            "Potrebna dokumentacija za prijavu",
+            "Informacije o programu"
+        ],
+        link: "https://www.rijeka.hr/teme-za-gradane/obitelj-i-drustvena-skrb/mladi/besplatan-javni-gradski-prijevoz-za-srednjoskolce/"
+    },
+    "Sufinanciranje prijevoza za studente": {
+        description: "Program sufinanciranja javnog prijevoza",
+        details: [
+            "Potrebna dokumentacija",
+            "Rokovi za predaju",
+            "Uvjeti sufinanciranja"
+        ],
+        link: "https://www.rijeka.hr"
+    },
+    "Savjet mladih grada Rijeke": {
+        description: "Participacija mladih u odlučivanju",
+        details: [
+            "Aktivnosti za uključivanje mladih",
+            "Poticanje dijaloga",
+            "Razvoj kritičkog razmišljanja"
+        ],
+        link: "https://www.rijeka.hr/gradska-uprava/gradsko-vijece/savjet-mladih-grada-rijeke/"
+    },
+    "Online savjetovalište / karijerni servis": {
+        description: "Podrška pri zapošljavanju mladih",
+        details: [
+            "Pomoć pri izradi CV-a",
+            "Savjeti za traženje posla",
+            "Karijerno usmjeravanje"
+        ],
+        link: "https://www.ctk-rijeka.hr/"
+    },
+    "Programi socijalne i zdravstvene zaštite mladih": {
+        description: "Socijalna i zdravstvena podrška",
+        details: [
+            "Programi socijalne zaštite",
+            "Prevencija i podrška mladima",
+            "Pomoć ugroženima"
+        ],
+        link: "https://www.rijeka.hr"
+    },
+    "Eduktivne i mentorska aktivnost (škole)": {
+        description: "Obrazovni programi i mentorstvo",
+        details: [
+            "Školske radionice",
+            "Projekti cjeloživotnog učenja",
+            "Razvoj kompetencija"
+        ],
+        link: "https://dom-mladih.hr/aktivnosti/"
+    },
+    "Kulturni i festivalski programi": {
+        description: "Manifestacije i događanja za mlade",
+        details: [
+            "Student Day festival",
+            "Kulturni programi",
+            "Studentska događanja"
+        ],
+        link: "https://www.rijeka.hr"
+    }
+};
+
+// Function to get description HTML for a tile
+function getTileDescriptionHTML(i) {
+    const name = fieldNames[i];
+    if (!name) return "Nema opisa za ovo polje.";
+    
+    // Find matching description
+    for (const [key, value] of Object.entries(tileDescriptions)) {
+        if (name.includes(key)) {
+            return `
+                <div class="tile-desc-content">
+                    <p>${value.description}</p>
+                    <ul>
+                        ${value.details.map(detail => `<li>${detail}</li>`).join('')}
+                    </ul>
+                    <p><a href="${value.link}" target="_blank" class="info-link">Više informacija</a></p>
+                </div>
+            `;
+        }
+    }
+    
+    // Default description for special fields
+    if (name.includes("PRILIKA")) return "<p>Polje prilike! Možeš dobiti ili izgubiti novac.</p>";
+    if (name.includes("IZAZOV")) return "<p>Polje izazova! Testiraj svoju sreću.</p>";
+    if (name.includes("ZATVOR")) return "<p>Zatvor - odmori jedan krug.</p>";
+    if (name.includes("START")) return "<p>Početno polje - dobij 200$ kada prođeš preko njega!</p>";
+    
+    return "<p>Običnо polje bez posebnog opisa.</p>";
+}
 
 // Players
 const players = [
@@ -190,7 +322,7 @@ function showTileAside(i) {
     const nameEl = document.getElementById('tileAsideName');
     const descEl = document.getElementById('tileAsideDesc');
     nameEl.textContent = fieldNames[i] || `Polje ${i}`;
-    descEl.textContent = tileDescriptions[i] || '';
+    descEl.innerHTML = getTileDescriptionHTML(i);
     aside.classList.remove('hidden');
 }
 
@@ -234,6 +366,9 @@ function showFieldInfo(i) {
     fieldName.textContent = `${i}. ${f.name}`;
     fieldPrice.textContent = (f.price > 0) ? `Cijena: ${f.price}$` : `Ne može se kupiti`;
     fieldOwner.textContent = (f.owner === null) ? `Vlasnik: nitko` : `Vlasnik: ${players[f.owner].name}`;
+    
+    // Show the description in the aside when clicking the tile
+    showTileAside(i);
     
     if (f.price > 0 && f.owner === null) {
         buyBtn.classList.remove('hidden');

@@ -174,6 +174,31 @@ body {
     color: #555;
 }
 
+.tile-desc-content {
+    margin-top: 10px;
+}
+
+.tile-desc-content ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.tile-desc-content li {
+    margin: 5px 0;
+}
+
+.info-link {
+    color: #2980b9;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+.info-link:hover {
+    text-decoration: underline;
+    color: #1c638b;
+}
+
 #buyBtn {
     width: 100%;
     padding: 10px;
